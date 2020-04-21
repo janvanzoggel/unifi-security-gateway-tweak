@@ -1,0 +1,106 @@
+{  
+    "interfaces":{  
+        "ethernet":{  
+            "eth0":{
+                "description": "WAN",
+                "duplex": "auto",
+                "speed": "auto",
+                "vif":{  
+                    "4": {
+                        "address": [
+                            "dhcp"
+                        ],
+                        "description": "eth0.4 - IPTV",
+                        "dhcp-options": {
+                            "client-option": [
+                                "request subnet-mask, routers, rfc3442-classless-static-routes;"
+                            ],
+                            "default-route": "no-update",
+                            "default-route-distance": "210"
+                        }
+                    },
+                    "34":{  
+                        "description": "eth0.34 - Internet",
+                        "address":[  
+                            "dhcp"
+                        ],
+                        "egress-qos":"0:2",
+                        "dhcp-options":{  
+                             "default-route":"update",
+                             "default-route-distance":"1",
+                             "name-server":"no-update"
+                        },
+                        "firewall":{  
+                            "in":{  
+                                "ipv6-name":"WANv6_IN",
+                                "name":"WAN_IN"
+                            },
+                            "local":{  
+                                "ipv6-name":"WANv6_LOCAL",
+                                "name":"WAN_LOCAL"
+                            },
+                            "out":{  
+                                "ipv6-name":"WANv6_OUT",
+                                "name":"WAN_OUT"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "protocols": {
+        "igmp-proxy": {
+            "interface": {
+                "eth1": {
+                    "role": "downstream",
+                    "threshold": "1",
+                    "whitelist": [
+                        "239.0.0.0/16",
+                        "225.0.71.0/24",
+                        "224.0.0.0/16"
+                    ]
+                },
+                "eth0": {
+                    "role": "disabled",
+                    "threshold": "1"
+                },
+                "eth0.4": {
+                    "alt-subnet": [
+                        "0.0.0.0/0"
+                    ],
+                    "role": "upstream",
+                    "threshold": "1"
+                },
+                "eth0.34": {
+                    "role": "disabled",
+                    "threshold": "1"
+                },
+                "eth2": {
+                    "role": "disabled",
+                    "threshold": "1"
+                }
+            }
+        }
+    },
+    "service": {
+        "nat": {
+            "rule": {
+                "5000": {
+                    "description": "MASQ corporate_network to IPTV network",
+                    "log": "disable",
+                    "outbound-interface": "eth0.4",
+                    "protocol": "all",
+                    "type": "masquerade"
+                },
+                "5001": {
+                    "description": "MASQ corporate_network to WAN",
+                    "log": "disable",
+                    "outbound-interface": "eth0.34",
+                    "protocol": "all",
+                    "type": "masquerade"
+                }
+            }
+        }
+    }
+}
